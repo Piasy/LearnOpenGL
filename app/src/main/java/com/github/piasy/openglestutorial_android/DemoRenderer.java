@@ -3,6 +3,7 @@ package com.github.piasy.openglestutorial_android;
 import android.content.Context;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
+import android.opengl.Matrix;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
@@ -21,15 +22,18 @@ class DemoRenderer implements GLSurfaceView.Renderer {
     private static final int STRIDE = (POSITION_COMPONENT_COUNT + COLOR_COMPONENT_COUNT)
                                       * BYTES_PER_FLOAT;
 
+    private static final String U_MATRIX = "u_Matrix";
     private static final String A_COLOR = "a_Color";
     private static final String A_POSITION = "a_Position";
 
     private final Context mContext;
     private final FloatBuffer mVertexData;
+    private final float[] mProjectionMatrix = new float[16];
 
     private int mProgram;
     private int mColorLocation;
     private int mPositionLocation;
+    private int mMatrixLocation;
 
     DemoRenderer(final Context context) {
         mContext = context;
@@ -39,19 +43,19 @@ class DemoRenderer implements GLSurfaceView.Renderer {
 
                 // Triangle Fan
                 0f, 0f, 1f, 1f, 1f,
-                -0.5f, -0.5f, 0.7f, 0.7f, 0.7f,
-                0.5f, -0.5f, 0.7f, 0.7f, 0.7f,
-                0.5f, 0.5f, 0.7f, 0.7f, 0.7f,
-                -0.5f, 0.5f, 0.7f, 0.7f, 0.7f,
-                -0.5f, -0.5f, 0.7f, 0.7f, 0.7f,
+                -0.5f, -0.8f, 0.7f, 0.7f, 0.7f,
+                0.5f, -0.8f, 0.7f, 0.7f, 0.7f,
+                0.5f, 0.8f, 0.7f, 0.7f, 0.7f,
+                -0.5f, 0.8f, 0.7f, 0.7f, 0.7f,
+                -0.5f, -0.8f, 0.7f, 0.7f, 0.7f,
 
                 // Line 1
                 -0.5f, 0f, 1f, 0f, 0f,
                 0.5f, 0f, 1f, 0f, 0f,
 
                 // Mallets
-                0f, -0.25f, 0f, 0f, 1f,
-                0f, 0.25f, 1f, 0f, 0f
+                0f, -0.4f, 0f, 0f, 1f,
+                0f, 0.4f, 1f, 0f, 0f
         };
 
         mVertexData = ByteBuffer
@@ -80,6 +84,7 @@ class DemoRenderer implements GLSurfaceView.Renderer {
         GLES20.glUseProgram(mProgram);
         mColorLocation = GLES20.glGetAttribLocation(mProgram, A_COLOR);
         mPositionLocation = GLES20.glGetAttribLocation(mProgram, A_POSITION);
+        mMatrixLocation = GLES20.glGetUniformLocation(mProgram, U_MATRIX);
 
         mVertexData.position(0);
         GLES20.glVertexAttribPointer(mPositionLocation, POSITION_COMPONENT_COUNT, GLES20.GL_FLOAT,
@@ -95,11 +100,22 @@ class DemoRenderer implements GLSurfaceView.Renderer {
     @Override
     public void onSurfaceChanged(GL10 unused, int width, int height) {
         GLES20.glViewport(0, 0, width, height);
+
+        float aspectRatio = (float) Math.max(width, height) / Math.min(width, height);
+        if (width > height) {
+            // Landscape
+            Matrix.orthoM(mProjectionMatrix, 0, -aspectRatio, aspectRatio, -1f, 1f, -1f, 1f);
+        } else {
+            // Portrait or square
+            Matrix.orthoM(mProjectionMatrix, 0, -1f, 1f, -aspectRatio, aspectRatio, -1f, 1f);
+        }
     }
 
     @Override
     public void onDrawFrame(GL10 unused) {
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
+
+        GLES20.glUniformMatrix4fv(mMatrixLocation, 1, false, mProjectionMatrix, 0);
 
         // rectangle
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_FAN, 0, 6);
