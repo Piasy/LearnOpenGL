@@ -14,9 +14,14 @@ import javax.microedition.khronos.opengles.GL10;
  */
 class DemoRenderer implements GLSurfaceView.Renderer {
 
-    private static final int POSITION_COMPONENT_COUNT = 2;
     private static final int BYTES_PER_FLOAT = 4;
-    private static final String U_COLOR = "u_Color";
+
+    private static final int POSITION_COMPONENT_COUNT = 2;
+    private static final int COLOR_COMPONENT_COUNT = 3;
+    private static final int STRIDE = (POSITION_COMPONENT_COUNT + COLOR_COMPONENT_COUNT)
+                                      * BYTES_PER_FLOAT;
+
+    private static final String A_COLOR = "a_Color";
     private static final String A_POSITION = "a_Position";
 
     private final Context mContext;
@@ -30,23 +35,23 @@ class DemoRenderer implements GLSurfaceView.Renderer {
         mContext = context;
 
         float[] tableVerticesWithTriangles = {
-                // Triangle 1
-                -0.5f, -0.5f,
-                0.5f, 0.5f,
-                -0.5f, 0.5f,
+                // Order of coordinates: X, Y, R, G, B
 
-                // Triangle 2
-                -0.5f, -0.5f,
-                0.5f, -0.5f,
-                0.5f, 0.5f,
+                // Triangle Fan
+                0f, 0f, 1f, 1f, 1f,
+                -0.5f, -0.5f, 0.7f, 0.7f, 0.7f,
+                0.5f, -0.5f, 0.7f, 0.7f, 0.7f,
+                0.5f, 0.5f, 0.7f, 0.7f, 0.7f,
+                -0.5f, 0.5f, 0.7f, 0.7f, 0.7f,
+                -0.5f, -0.5f, 0.7f, 0.7f, 0.7f,
 
                 // Line 1
-                -0.5f, 0f,
-                0.5f, 0f,
+                -0.5f, 0f, 1f, 0f, 0f,
+                0.5f, 0f, 1f, 0f, 0f,
 
                 // Mallets
-                0f, -0.25f,
-                0f, 0.25f
+                0f, -0.25f, 0f, 0f, 1f,
+                0f, 0.25f, 1f, 0f, 0f
         };
 
         mVertexData = ByteBuffer
@@ -73,13 +78,18 @@ class DemoRenderer implements GLSurfaceView.Renderer {
         }
 
         GLES20.glUseProgram(mProgram);
-        mColorLocation = GLES20.glGetUniformLocation(mProgram, U_COLOR);
+        mColorLocation = GLES20.glGetAttribLocation(mProgram, A_COLOR);
         mPositionLocation = GLES20.glGetAttribLocation(mProgram, A_POSITION);
 
         mVertexData.position(0);
         GLES20.glVertexAttribPointer(mPositionLocation, POSITION_COMPONENT_COUNT, GLES20.GL_FLOAT,
-                false, 0, mVertexData);
+                false, STRIDE, mVertexData);
         GLES20.glEnableVertexAttribArray(mPositionLocation);
+
+        mVertexData.position(POSITION_COMPONENT_COUNT);
+        GLES20.glVertexAttribPointer(mColorLocation, COLOR_COMPONENT_COUNT, GLES20.GL_FLOAT,
+                false, STRIDE, mVertexData);
+        GLES20.glEnableVertexAttribArray(mColorLocation);
     }
 
     @Override
@@ -92,17 +102,13 @@ class DemoRenderer implements GLSurfaceView.Renderer {
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
 
         // rectangle
-        GLES20.glUniform4f(mColorLocation, 1.0f, 1.0f, 1.0f, 1.0f);
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, 6);
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_FAN, 0, 6);
 
         // divide line
-        GLES20.glUniform4f(mColorLocation, 1.0f, 0.0f, 0.0f, 1.0f);
         GLES20.glDrawArrays(GLES20.GL_LINES, 6, 2);
 
         // points
-        GLES20.glUniform4f(mColorLocation, 0.0f, 0.0f, 1.0f, 1.0f);
         GLES20.glDrawArrays(GLES20.GL_POINTS, 8, 1);
-        GLES20.glUniform4f(mColorLocation, 1.0f, 0.0f, 0.0f, 1.0f);
         GLES20.glDrawArrays(GLES20.GL_POINTS, 9, 1);
     }
 }
