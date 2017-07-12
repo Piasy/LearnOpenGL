@@ -8,15 +8,42 @@ import android.opengl.GLES20;
 import android.os.Environment;
 import android.util.Log;
 import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 
 /**
  * Created by Piasy{github.com/Piasy} on 6/7/16.
  */
-public class Utils {
+public final class Utils {
+
+    private Utils() {
+        // util
+    }
+
+    public static String loadShader(Context context, int resId) {
+        StringBuilder builder = new StringBuilder();
+
+        try {
+            InputStream inputStream = context.getResources().openRawResource(resId);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+
+            String line;
+            while ((line = reader.readLine()) != null) {
+                builder.append(line)
+                        .append('\n');
+            }
+            reader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return builder.toString();
+    }
 
     public static boolean supportGlEs20(Activity activity) {
         ActivityManager activityManager = (ActivityManager) activity.getSystemService(
