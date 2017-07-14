@@ -28,7 +28,10 @@ class DemoRenderer implements GLSurfaceView.Renderer {
 
     private final Context mContext;
     private final FloatBuffer mVertexData;
+
+    private final float[] mModelMatrix = new float[16];
     private final float[] mProjectionMatrix = new float[16];
+    private final float[] mTmpMatrix = new float[16];
 
     private int mProgram;
     private int mColorLocation;
@@ -101,14 +104,13 @@ class DemoRenderer implements GLSurfaceView.Renderer {
     public void onSurfaceChanged(GL10 unused, int width, int height) {
         GLES20.glViewport(0, 0, width, height);
 
-        float aspectRatio = (float) Math.max(width, height) / Math.min(width, height);
-        if (width > height) {
-            // Landscape
-            Matrix.orthoM(mProjectionMatrix, 0, -aspectRatio, aspectRatio, -1f, 1f, -1f, 1f);
-        } else {
-            // Portrait or square
-            Matrix.orthoM(mProjectionMatrix, 0, -1f, 1f, -aspectRatio, aspectRatio, -1f, 1f);
-        }
+        Matrix.perspectiveM(mProjectionMatrix, 0, 45, (float) width / height, 1f, 10f);
+
+        Matrix.setIdentityM(mModelMatrix, 0);
+        Matrix.translateM(mModelMatrix, 0, 0f, 0f, -2.5f);
+        Matrix.rotateM(mModelMatrix, 0, -60f, 1f, 0f, 0f);
+        Matrix.multiplyMM(mTmpMatrix, 0, mProjectionMatrix, 0, mModelMatrix, 0);
+        System.arraycopy(mTmpMatrix, 0, mProjectionMatrix, 0, mTmpMatrix.length);
     }
 
     @Override
