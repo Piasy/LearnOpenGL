@@ -43,6 +43,12 @@ public class Table {
                 textureProgram.getTextureCoordinatesAttributeLocation(),
                 TEXTURE_COORDINATES_COMPONENT_COUNT,
                 STRIDE);
+
+        mVertexArray.setVertexAttribPointer(
+                POSITION_COMPONENT_COUNT,
+                textureProgram.getTextureCoordinatesAttributeLocation2(),
+                TEXTURE_COORDINATES_COMPONENT_COUNT,
+                STRIDE);
     }
 
     public void draw() {

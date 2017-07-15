@@ -22,6 +22,7 @@ class DemoRenderer implements GLSurfaceView.Renderer {
     private TextureShaderProgram mTextureShaderProgram;
     private ColorShaderProgram mColorShaderProgram;
     private int mTexture;
+    private int mTexture2;
 
     DemoRenderer(final Context context) {
         mContext = context;
@@ -36,6 +37,7 @@ class DemoRenderer implements GLSurfaceView.Renderer {
         mTextureShaderProgram = new TextureShaderProgram(mContext);
         mColorShaderProgram = new ColorShaderProgram(mContext);
         mTexture = Utils.loadTexture(mContext, R.drawable.air_hockey_surface);
+        mTexture2 = Utils.loadTexture(mContext, R.drawable.p_300px);
     }
 
     @Override
@@ -58,7 +60,7 @@ class DemoRenderer implements GLSurfaceView.Renderer {
 
         // Draw the table.
         mTextureShaderProgram.useProgram();
-        mTextureShaderProgram.setUniforms(mProjectionMatrix, mTexture);
+        mTextureShaderProgram.setUniforms(mProjectionMatrix, mTexture, mTexture2);
         mTable.bindData(mTextureShaderProgram);
         mTable.draw();
 
